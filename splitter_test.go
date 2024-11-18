@@ -2,31 +2,32 @@ package splitter
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewSplitter(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 	require.NotNil(t, s)
 	rs, ok := s.(*splitter)
 	require.True(t, ok)
 	require.NotNil(t, rs)
-	require.Equal(t, '/', rs.separator)
+	require.Equal(t, "/", rs.separator)
 	require.Equal(t, 0, len(rs.enclosures))
 
 	enc := &Enclosure{
 		Start: '{',
 		End:   '}',
 	}
-	s, err = NewSplitter('/', enc, nil)
+	s, err = NewSplitter("/", enc, nil)
 	require.NoError(t, err)
 	require.NotNil(t, s)
 	rs, ok = s.(*splitter)
 	require.True(t, ok)
 	require.NotNil(t, rs)
-	require.Equal(t, '/', rs.separator)
+	require.Equal(t, "/", rs.separator)
 	require.Equal(t, 1, len(rs.enclosures))
 	require.Equal(t, *enc, rs.enclosures[0])
 }
@@ -36,7 +37,7 @@ func TestNewSplitter_Errors(t *testing.T) {
 		Start: '{',
 		End:   '}',
 	}
-	_, err := NewSplitter('/', enc, enc)
+	_, err := NewSplitter("/", enc, enc)
 	require.Error(t, err)
 	require.Equal(t, "existing start encloser ('{' in Enclosure[2])", err.Error())
 
@@ -44,7 +45,7 @@ func TestNewSplitter_Errors(t *testing.T) {
 		Start: '<',
 		End:   '}',
 	}
-	_, err = NewSplitter('/', enc, enc2)
+	_, err = NewSplitter("/", enc, enc2)
 	require.Error(t, err)
 	require.Equal(t, "existing end encloser ('}' in Enclosure[2])", err.Error())
 }
@@ -55,10 +56,10 @@ func TestMustCreateSplitter_Panics(t *testing.T) {
 		End:   '}',
 	}
 	require.NotPanics(t, func() {
-		MustCreateSplitter('/', enc)
+		MustCreateSplitter("/", enc)
 	})
 	require.Panics(t, func() {
-		MustCreateSplitter('/', enc, enc)
+		MustCreateSplitter("/", enc, enc)
 	})
 }
 
@@ -83,7 +84,7 @@ func TestSplitter_Split(t *testing.T) {
 			Escape:    '\\',
 		},
 	}
-	s, _ := NewSplitter('/', encs...)
+	s, _ := NewSplitter("/", encs...)
 
 	testCases := []struct {
 		str    string
@@ -131,8 +132,83 @@ func TestSplitter_Split(t *testing.T) {
 	}
 }
 
+func TestSplitter_SplitStr(t *testing.T) {
+	encs := []*Enclosure{
+		{
+			Start: '{',
+			End:   '}',
+		},
+		{
+			Start:     '\'',
+			End:       '\'',
+			IsQuote:   true,
+			Escapable: true,
+			Escape:    '\\',
+		},
+		{
+			Start:     '"',
+			End:       '"',
+			IsQuote:   true,
+			Escapable: true,
+			Escape:    '\\',
+		},
+	}
+	s, _ := NewSplitter("aaa/", encs...)
+
+	testCases := []struct {
+		str    string
+		expect []string
+	}{
+		{
+			`aaa/fooaaa/{aaa/}`,
+			[]string{``, `foo`, `{aaa/}`},
+		},
+		{
+			`aaa/fooaaa/{{aaa/}}`,
+			[]string{``, `foo`, `{{aaa/}}`},
+		},
+		{
+			`fooaaa/baraaa/"bazaaa/qux"aaa/'quxaaa/"aaa/"aaa/"aaa/"aaa/"aaa/"'aaa/`,
+			[]string{`foo`, `bar`, `"bazaaa/qux"`, `'quxaaa/"aaa/"aaa/"aaa/"aaa/"aaa/"'`, ``},
+		},
+		{
+			`fooaaa/"\"aaa/"aaa/bar`,
+			[]string{`foo`, `"\"aaa/"`, `bar`},
+		},
+		{
+			``,
+			[]string{``},
+		},
+		{
+			` `,
+			[]string{` `},
+		},
+		{
+			`aaa/`,
+			[]string{``, ``},
+		},
+		{
+			`aaa/aaa/`,
+			[]string{``, ``, ``},
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("[%d]%s", i+1, tc.str), func(t *testing.T) {
+			result, err := s.Split(tc.str)
+
+			fmt.Printf("\nMYTEST: %s", tc.str)
+			for _, r := range result {
+				fmt.Printf(" [%s] ", r)
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expect, result)
+		})
+	}
+}
+
 func TestSplitter_Split_DoubleEscapes(t *testing.T) {
-	s, err := NewSplitter(',', DoubleQuotesDoubleEscaped)
+	s, err := NewSplitter(",", DoubleQuotesDoubleEscaped)
 	require.NoError(t, err)
 
 	parts, err := s.Split(`"aa"","",,,,,,""""""""""bbb"`)
@@ -161,7 +237,7 @@ func TestSplitter_Split_Errors(t *testing.T) {
 			Escape:    '\\',
 		},
 	}
-	s, _ := NewSplitter('/', encs...)
+	s, _ := NewSplitter("/", encs...)
 
 	testCases := []struct {
 		str       string
@@ -238,7 +314,7 @@ func TestSplitter_Split_Errors(t *testing.T) {
 }
 
 func TestSplitter_Split_Contiguous(t *testing.T) {
-	s, err := NewSplitter(',', DoubleQuotesDoubleEscaped, SingleQuotes, CurlyBrackets)
+	s, err := NewSplitter(",", DoubleQuotesDoubleEscaped, SingleQuotes, CurlyBrackets)
 	require.NoError(t, err)
 
 	c := &infoCapture{}
@@ -364,7 +440,7 @@ func (o *infoCapture) Apply(s string, pos int, totalLen int, captured int, skipp
 }
 
 func TestSplitter_SetDefaultOptions(t *testing.T) {
-	s, err := NewSplitter(',')
+	s, err := NewSplitter(",")
 	require.NoError(t, err)
 	rs, ok := s.(*splitter)
 	require.True(t, ok)
@@ -378,7 +454,7 @@ func TestSplitter_SetDefaultOptions(t *testing.T) {
 }
 
 func TestEnsureSplitterContextOptionsSegregated(t *testing.T) {
-	s, err := NewSplitter(',')
+	s, err := NewSplitter(",")
 	require.NoError(t, err)
 
 	opt := &addOptionsOption{
@@ -401,10 +477,10 @@ func (o *addOptionsOption) Apply(s string, pos int, totalLen int, captured int, 
 }
 
 func TestBracketsEscaping(t *testing.T) {
-	unescaped, err := NewSplitter('/', DoubleQuotes,
+	unescaped, err := NewSplitter("/", DoubleQuotes,
 		Parenthesis, SquareBrackets)
 	require.NoError(t, err)
-	escaped, err := NewSplitter('/', DoubleQuotes,
+	escaped, err := NewSplitter("/", DoubleQuotes,
 		MustMakeEscapable(Parenthesis, '\\'), MustMakeEscapable(SquareBrackets, '\\'))
 	testCases := []struct {
 		str             string

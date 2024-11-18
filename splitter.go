@@ -21,7 +21,7 @@ type Splitter interface {
 // the optional `encs` varargs are the enclosures (e.g. brackets, quotes) to be taken into consideration when splitting
 //
 // An error is returned if any of enclosures specified match any other enclosure `Start`/`End`
-func NewSplitter(separator rune, encs ...*Enclosure) (Splitter, error) {
+func NewSplitter(separator string, encs ...*Enclosure) (Splitter, error) {
 	result := &splitter{
 		separator:   separator,
 		enclosures:  make([]Enclosure, 0, len(encs)),
@@ -48,7 +48,7 @@ func NewSplitter(separator rune, encs ...*Enclosure) (Splitter, error) {
 }
 
 // MustCreateSplitter is the same as NewSplitter, except that it panics in case of error
-func MustCreateSplitter(separator rune, encs ...*Enclosure) Splitter {
+func MustCreateSplitter(separator string, encs ...*Enclosure) Splitter {
 	if s, err := NewSplitter(separator, encs...); err != nil {
 		panic(err)
 	} else {
@@ -57,7 +57,7 @@ func MustCreateSplitter(separator rune, encs ...*Enclosure) Splitter {
 }
 
 type splitter struct {
-	separator   rune
+	separator   string
 	enclosures  []Enclosure
 	openers     map[rune]Enclosure
 	closers     map[rune]Enclosure
@@ -124,8 +124,17 @@ type splitterContext struct {
 func newSplitterContext(str string, splitter *splitter, options []Option) *splitterContext {
 	runes := []rune(str)
 	cp := 1
-	for _, r := range runes {
-		if r == splitter.separator {
+	for i := range runes {
+		check := false
+		for j, s := range splitter.separator {
+			if len(runes) >= i+j && runes[i+j] == s {
+				check = true
+			} else {
+				check = false
+				break
+			}
+		}
+		if check {
 			cp++
 		}
 	}
@@ -144,16 +153,29 @@ func newSplitterContext(str string, splitter *splitter, options []Option) *split
 
 func (ctx *splitterContext) split() ([]string, error) {
 	ctx.pos = 0
-	for ; ctx.pos < ctx.len; ctx.pos++ {
+	for ctx.pos < ctx.len {
 		ctx.rune = ctx.runes[ctx.pos]
-		if ctx.rune == ctx.splitter.separator {
-			if !ctx.inAny() {
-				if err := ctx.purge(ctx.pos, false); err != nil {
-					return nil, err
+		check := false
+		for j, s := range ctx.splitter.separator {
+			if len(ctx.runes) >= ctx.pos+j && ctx.runes[ctx.pos+j] == s {
+				check = true
+			} else {
+				check = false
+				break
+			}
+		}
+		if check {
+			for j := range ctx.splitter.separator {
+				if !ctx.inAny() {
+					if err := ctx.purge(ctx.pos+j, false); err != nil {
+						return nil, err
+					}
 				}
 			}
+			ctx.pos += len(ctx.splitter.separator)
 		} else if isEnd, inQuote := ctx.isQuoteEnd(); isEnd {
 			ctx.pop(ctx.pos)
+			ctx.pos++
 		} else {
 			if !inQuote {
 				if isClose, skipClose := ctx.isClose(); isClose && !skipClose {
@@ -164,6 +186,7 @@ func (ctx *splitterContext) split() ([]string, error) {
 					return nil, newSplittingError(Unopened, ctx.pos, ctx.rune, &cEnc)
 				}
 			}
+			ctx.pos++
 		}
 	}
 	if ctx.inAny() {

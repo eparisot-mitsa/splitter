@@ -1,12 +1,13 @@
 package splitter
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestSplitOptionsMerge(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 	const testStr = `/a/b/c/`
 	pts, err := s.Split(testStr)
@@ -32,7 +33,7 @@ func TestSplitOptionsMerge(t *testing.T) {
 }
 
 func TestOption_TrimSpaces(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(` / / `, TrimSpaces)
@@ -66,7 +67,7 @@ func TestOption_TrimSpaces(t *testing.T) {
 }
 
 func TestOption_Trim(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	trimmer := Trim(" \t\n")
@@ -101,7 +102,7 @@ func TestOption_Trim(t *testing.T) {
 }
 
 func TestOption_NoEmpties(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/b/c`, NoEmpties)
@@ -114,7 +115,7 @@ func TestOption_NoEmpties(t *testing.T) {
 }
 
 func TestOption_NoEmptiesMsg(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	_, err = s.Split(`a//c`, NoEmptiesMsg("whoops at position %d"))
@@ -123,7 +124,7 @@ func TestOption_NoEmptiesMsg(t *testing.T) {
 }
 
 func TestOption_IgnoreEmpties(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/b/c`, IgnoreEmpties)
@@ -148,7 +149,7 @@ func TestOption_IgnoreEmpties(t *testing.T) {
 }
 
 func TestOption_NotEmptyFirst(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/b/c`, NotEmptyFirst)
@@ -161,7 +162,7 @@ func TestOption_NotEmptyFirst(t *testing.T) {
 }
 
 func TestOption_NotEmptyFirstMsg(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	_, err = s.Split(`/a/b/c`, NotEmptyFirstMsg("whoops"))
@@ -170,7 +171,7 @@ func TestOption_NotEmptyFirstMsg(t *testing.T) {
 }
 
 func TestOption_IgnoreEmptyFirst(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/b/c`, IgnoreEmptyFirst)
@@ -183,7 +184,7 @@ func TestOption_IgnoreEmptyFirst(t *testing.T) {
 }
 
 func TestOption_NotEmptyLast(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/b/c`, NotEmptyLast)
@@ -196,7 +197,7 @@ func TestOption_NotEmptyLast(t *testing.T) {
 }
 
 func TestOption_NotEmptyLastMsg(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/b/c/`, NotEmptyLastMsg("whoops"))
@@ -205,7 +206,7 @@ func TestOption_NotEmptyLastMsg(t *testing.T) {
 }
 
 func TestOption_IgnoreEmptyLast(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/b/c`, IgnoreEmptyLast)
@@ -218,7 +219,7 @@ func TestOption_IgnoreEmptyLast(t *testing.T) {
 }
 
 func TestOption_NotEmptyInners(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`/a//c/`)
@@ -235,7 +236,7 @@ func TestOption_NotEmptyInners(t *testing.T) {
 }
 
 func TestOption_NotEmptyInnersMsg(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`/a//c/`)
@@ -252,7 +253,7 @@ func TestOption_NotEmptyInnersMsg(t *testing.T) {
 }
 
 func TestOption_IgnoreEmptyInners(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`/a//c/`)
@@ -275,7 +276,7 @@ func TestOption_IgnoreEmptyInners(t *testing.T) {
 }
 
 func TestOption_NotEmptyOuters(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`/a//c/`)
@@ -299,7 +300,7 @@ func TestOption_NotEmptyOuters(t *testing.T) {
 }
 
 func TestOption_NotEmptyOutersMsg(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`/a//c/`)
@@ -323,7 +324,7 @@ func TestOption_NotEmptyOutersMsg(t *testing.T) {
 }
 
 func TestOption_IgnoreEmptyOuters(t *testing.T) {
-	s, err := NewSplitter('/')
+	s, err := NewSplitter("/")
 	require.NoError(t, err)
 
 	pts, err := s.Split(`/a//c/`)
@@ -360,7 +361,7 @@ func TestOption_IgnoreEmptyOuters(t *testing.T) {
 }
 
 func TestOption_NoContiguousQuotes(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes)
+	s, err := NewSplitter("/", DoubleQuotes)
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/"b" "b"/c`, NoContiguousQuotes)
@@ -372,7 +373,7 @@ func TestOption_NoContiguousQuotes(t *testing.T) {
 }
 
 func TestOption_NoContiguousQuotesMsg(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes)
+	s, err := NewSplitter("/", DoubleQuotes)
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/"b""b"/c/`, NoContiguousQuotesMsg("whoops"))
@@ -381,7 +382,7 @@ func TestOption_NoContiguousQuotesMsg(t *testing.T) {
 }
 
 func TestOption_NoMultiQuotes(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes)
+	s, err := NewSplitter("/", DoubleQuotes)
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/"b"/c`, NoMultiQuotes)
@@ -393,7 +394,7 @@ func TestOption_NoMultiQuotes(t *testing.T) {
 }
 
 func TestOption_NoMultiQuotesMsg(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes)
+	s, err := NewSplitter("/", DoubleQuotes)
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/"b""b"/c`, NoMultiQuotesMsg("whoops"))
@@ -402,7 +403,7 @@ func TestOption_NoMultiQuotesMsg(t *testing.T) {
 }
 
 func TestOption_NoMultis(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes, Parenthesis)
+	s, err := NewSplitter("/", DoubleQuotes, Parenthesis)
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/"b"/(,)`, NoMultis)
@@ -414,7 +415,7 @@ func TestOption_NoMultis(t *testing.T) {
 }
 
 func TestOption_NoMultisMsg(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes, Parenthesis)
+	s, err := NewSplitter("/", DoubleQuotes, Parenthesis)
 	require.NoError(t, err)
 
 	_, err = s.Split(`a/"b" ()/(,)`, NoMultisMsg("whoops"))
@@ -423,7 +424,7 @@ func TestOption_NoMultisMsg(t *testing.T) {
 }
 
 func TestOption_StripQuotes(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotes)
+	s, err := NewSplitter("/", DoubleQuotes)
 	require.NoError(t, err)
 
 	pts, err := s.Split(`a/"b"`, StripQuotes)
@@ -452,7 +453,7 @@ func TestOption_StripQuotes(t *testing.T) {
 }
 
 func TestOption_UnescapeQuotes(t *testing.T) {
-	s, err := NewSplitter('/', DoubleQuotesDoubleEscaped)
+	s, err := NewSplitter("/", DoubleQuotesDoubleEscaped)
 	require.NoError(t, err)
 
 	pts, err := s.Split(`"a"""/"b""b""b"`)

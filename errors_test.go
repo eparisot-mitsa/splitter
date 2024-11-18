@@ -3,8 +3,9 @@ package splitter
 import (
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestWrappedSplittingError(t *testing.T) {
@@ -74,13 +75,13 @@ func TestNewOptionFailError(t *testing.T) {
 }
 
 func TestSplitAlwaysReturnsSplittingError(t *testing.T) {
-	s, err := NewSplitter(',', Parenthesis)
+	s, err := NewSplitter(",", Parenthesis)
 	require.NoError(t, err)
 	s.AddDefaultOptions(NotEmptyFirstMsg("whoops at position %d"))
 
-	_, err = s.Split(`(`)
+	_, err = s.Split("(")
 	require.Error(t, err)
-	require.Equal(t, fmt.Sprintf(unclosedFmt, `(`, 0), err.Error())
+	require.Equal(t, fmt.Sprintf(unclosedFmt, "(", 0), err.Error())
 	sErr, ok := err.(SplittingError)
 	require.True(t, ok)
 	require.Equal(t, Unclosed, sErr.Type())
@@ -89,9 +90,9 @@ func TestSplitAlwaysReturnsSplittingError(t *testing.T) {
 	require.Equal(t, Parenthesis, sErr.Enclosure())
 	require.Nil(t, sErr.Wrapped())
 
-	_, err = s.Split(`)`)
+	_, err = s.Split(")")
 	require.Error(t, err)
-	require.Equal(t, fmt.Sprintf(unopenedFmt, `)`, 0), err.Error())
+	require.Equal(t, fmt.Sprintf(unopenedFmt, ")", 0), err.Error())
 	sErr, ok = err.(SplittingError)
 	require.True(t, ok)
 	require.Equal(t, Unopened, sErr.Type())
@@ -102,9 +103,9 @@ func TestSplitAlwaysReturnsSplittingError(t *testing.T) {
 	require.NoError(t, sErr.Unwrap())
 	require.NoError(t, errors.Unwrap(sErr))
 
-	_, err = s.Split(`,a`)
+	_, err = s.Split(",a")
 	require.Error(t, err)
-	require.Equal(t, `whoops at position 0`, err.Error())
+	require.Equal(t, "whoops at position 0", err.Error())
 	sErr, ok = err.(SplittingError)
 	require.True(t, ok)
 	require.Equal(t, OptionFail, sErr.Type())
@@ -115,7 +116,7 @@ func TestSplitAlwaysReturnsSplittingError(t *testing.T) {
 	require.NoError(t, sErr.Unwrap())
 	require.NoError(t, errors.Unwrap(sErr))
 
-	_, err = s.Split(`a`, &errorOption{})
+	_, err = s.Split("a", &errorOption{})
 	require.Error(t, err)
 	require.Equal(t, "error option", err.Error())
 	sErr, ok = err.(SplittingError)
