@@ -153,27 +153,27 @@ func TestSplitter_SplitStr(t *testing.T) {
 			Escape:    '\\',
 		},
 	}
-	s, _ := NewSplitter("aaa/", encs...)
+	s, _ := NewSplitter(`AAA`, encs...)
 
 	testCases := []struct {
 		str    string
 		expect []string
 	}{
 		{
-			`aaa/fooaaa/{aaa/}`,
-			[]string{``, `foo`, `{aaa/}`},
+			`AAAfooAAA{AAA}`,
+			[]string{``, `foo`, `{AAA}`},
 		},
 		{
-			`aaa/fooaaa/{{aaa/}}`,
-			[]string{``, `foo`, `{{aaa/}}`},
+			`AAAfooAAA{{AAA}}`,
+			[]string{``, `foo`, `{{AAA}}`},
 		},
 		{
-			`fooaaa/baraaa/"bazaaa/qux"aaa/'quxaaa/"aaa/"aaa/"aaa/"aaa/"aaa/"'aaa/`,
-			[]string{`foo`, `bar`, `"bazaaa/qux"`, `'quxaaa/"aaa/"aaa/"aaa/"aaa/"aaa/"'`, ``},
+			`fooAAAbarAAA"bazAAAqux"AAA'quxAAA"AAA"AAA"AAA"AAA"AAA"'AAA`,
+			[]string{`foo`, `bar`, `"bazAAAqux"`, `'quxAAA"AAA"AAA"AAA"AAA"AAA"'`, ``},
 		},
 		{
-			`fooaaa/"\"aaa/"aaa/bar`,
-			[]string{`foo`, `"\"aaa/"`, `bar`},
+			`fooAAA'\'AAA'AAAbar`,
+			[]string{`foo`, `'\'AAA'`, `bar`},
 		},
 		{
 			``,
@@ -184,11 +184,11 @@ func TestSplitter_SplitStr(t *testing.T) {
 			[]string{` `},
 		},
 		{
-			`aaa/`,
+			`AAA`,
 			[]string{``, ``},
 		},
 		{
-			`aaa/aaa/`,
+			`AAAAAA`,
 			[]string{``, ``, ``},
 		},
 	}
@@ -196,10 +196,10 @@ func TestSplitter_SplitStr(t *testing.T) {
 		t.Run(fmt.Sprintf("[%d]%s", i+1, tc.str), func(t *testing.T) {
 			result, err := s.Split(tc.str)
 
-			fmt.Printf("\nMYTEST: %s", tc.str)
+			/*fmt.Printf("\nMYTEST: %s", tc.str)
 			for _, r := range result {
 				fmt.Printf(" [%s] ", r)
-			}
+			}*/
 
 			require.NoError(t, err)
 			require.Equal(t, tc.expect, result)

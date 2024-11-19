@@ -127,7 +127,7 @@ func newSplitterContext(str string, splitter *splitter, options []Option) *split
 	for i := range runes {
 		check := false
 		for j, s := range splitter.separator {
-			if len(runes) >= i+j && runes[i+j] == s {
+			if len(runes) > i+j && runes[i+j] == s {
 				check = true
 			} else {
 				check = false
@@ -165,9 +165,9 @@ func (ctx *splitterContext) split() ([]string, error) {
 			}
 		}
 		if check {
-			for j := range ctx.splitter.separator {
+			for j := 0; j < len(ctx.splitter.separator); j++ {
 				if !ctx.inAny() {
-					if err := ctx.purge(ctx.pos+j, false); err != nil {
+					if err := ctx.purge(ctx.pos+j, j, false); err != nil {
 						return nil, err
 					}
 				}
@@ -192,7 +192,7 @@ func (ctx *splitterContext) split() ([]string, error) {
 	if ctx.inAny() {
 		return nil, newSplittingError(Unclosed, ctx.current.openPos, ctx.current.enc.Start, &ctx.current.enc)
 	}
-	if err := ctx.purge(ctx.len, true); err != nil {
+	if err := ctx.purge(ctx.len, 0, true); err != nil {
 		return nil, err
 	}
 	return ctx.captured, nil
@@ -225,7 +225,7 @@ func (ctx *splitterContext) isQuoteEnd() (isEnd bool, inQuote bool) {
 	return
 }
 
-func (ctx *splitterContext) purge(i int, isLast bool) (err error) {
+func (ctx *splitterContext) purge(i, j int, isLast bool) (err error) {
 	if i >= ctx.lastAt {
 		ctx.purgeFixed(i)
 		capture := string(ctx.runes[ctx.lastAt:i])
@@ -238,7 +238,7 @@ func (ctx *splitterContext) purge(i int, isLast bool) (err error) {
 			}
 		}
 		err = asSplittingError(err, ctx.lastAt)
-		if addIt {
+		if j == 0 && addIt {
 			ctx.captured = append(ctx.captured, capture)
 		} else {
 			ctx.skipped++

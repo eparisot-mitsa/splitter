@@ -1,10 +1,10 @@
 package splitter
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 var testEnclosures = map[string]*Enclosure{
@@ -81,7 +81,7 @@ var testEnclosures = map[string]*Enclosure{
 
 func TestEnclosures(t *testing.T) {
 	for name, enc := range testEnclosures {
-		t.Run(fmt.Sprintf("%s", name), func(t *testing.T) {
+		t.Run("%s", func(t *testing.T) {
 			require.NotEqual(t, rune(0), enc.Start)
 			require.NotEqual(t, rune(0), enc.End)
 			if strings.Contains(name, "Quote") {
