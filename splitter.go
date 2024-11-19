@@ -157,7 +157,7 @@ func (ctx *splitterContext) split() ([]string, error) {
 		ctx.rune = ctx.runes[ctx.pos]
 		check := false
 		for j, s := range ctx.splitter.separator {
-			if len(ctx.runes) >= ctx.pos+j && ctx.runes[ctx.pos+j] == s {
+			if len(ctx.runes) > ctx.pos+j && ctx.runes[ctx.pos+j] == s {
 				check = true
 			} else {
 				check = false
