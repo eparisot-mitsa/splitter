@@ -207,6 +207,146 @@ func TestSplitter_SplitStr(t *testing.T) {
 	}
 }
 
+func TestSplitter_SplitStrSql(t *testing.T) {
+	encs := []*Enclosure{
+		{
+			Start: '{',
+			End:   '}',
+		},
+		{
+			Start:     '\'',
+			End:       '\'',
+			IsQuote:   true,
+			Escapable: true,
+			Escape:    '\\',
+		},
+		{
+			Start:     '"',
+			End:       '"',
+			IsQuote:   true,
+			Escapable: true,
+			Escape:    '\\',
+		},
+	}
+	s, _ := NewSplitter(`\n/\n`, encs...)
+
+	testCases := []struct {
+		str    string
+		expect []string
+	}{
+		{
+			`\n/\nfoo\n/\n{\n/\n}`,
+			[]string{``, `foo`, `{\n/\n}`},
+		},
+		{
+			`\n/\nfoo\n/\n{{\n/\n}}`,
+			[]string{``, `foo`, `{{\n/\n}}`},
+		},
+		{
+			`foo\n/\nbar\n/\n"baz\n/\nqux"\n/\n'qux\n/\n"\n/\n"\n/\n"\n/\n"\n/\n"\n/\n"'\n/\n`,
+			[]string{`foo`, `bar`, `"baz\n/\nqux"`, `'qux\n/\n"\n/\n"\n/\n"\n/\n"\n/\n"\n/\n"'`, ``},
+		},
+		{
+			`foo\n/\n'\'\n/\n'\n/\nbar`,
+			[]string{`foo`, `'\'\n/\n'`, `bar`},
+		},
+		{
+			``,
+			[]string{``},
+		},
+		{
+			` `,
+			[]string{` `},
+		},
+		{
+			`\n/\n`,
+			[]string{``, ``},
+		},
+		{
+			`\n/\n\n/\n`,
+			[]string{``, ``, ``},
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("[%d]%s", i+1, tc.str), func(t *testing.T) {
+			result, err := s.Split(tc.str)
+			require.NoError(t, err)
+			require.Equal(t, tc.expect, result)
+		})
+	}
+}
+
+func TestSplitter_SplitStrMsSqlDoubleQ(t *testing.T) {
+	encs := []*Enclosure{
+		{
+			Start: '{',
+			End:   '}',
+		},
+		{
+			Start:     '\'',
+			End:       '\'',
+			IsQuote:   true,
+			Escapable: true,
+			Escape:    '\\',
+		},
+		{
+			Start:     '"',
+			End:       '"',
+			IsQuote:   true,
+			Escapable: true,
+			Escape:    '\\',
+		},
+	}
+	s, _ := NewSplitter("\nGO\n", encs...)
+
+	testCases := []struct {
+		str    string
+		expect []string
+	}{
+		{
+			"\nGO\nfoo\nGO\n{\nGO\n}",
+			[]string{"", "foo", "{\nGO\n}"},
+		},
+		{
+			"\nGO\nfoo\nGO\n{{\nGO\n}}",
+			[]string{"", "foo", "{{\nGO\n}}"},
+		},
+		{
+			"foo\nGO\nbar\nGO\nbaz\nGO\nqux\nGO\nqux\nGO\n'\nGO\n'\nGO\n'\nGO\n'\nGO\n'\nGO\n'\nGO\n",
+			[]string{"foo", "bar", "baz", "qux", "qux", "'\nGO\n'", "'\nGO\n'", "'\nGO\n'", ""},
+		},
+		{
+			"",
+			[]string{""},
+		},
+		{
+			" ",
+			[]string{" "},
+		},
+		{
+			"\nGO\n",
+			[]string{"", ""},
+		},
+		{
+			"\nGO\n\nGO\n",
+			[]string{"", "", ""},
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("[%d]%s", i+1, tc.str), func(t *testing.T) {
+			result, err := s.Split(tc.str)
+
+			/*fmt.Printf("\nMYTEST: %s", tc.str)
+			for _, r := range result {
+				fmt.Printf(" [%s] ", r)
+			}*/
+
+			require.NoError(t, err)
+			require.Equal(t, tc.expect, result)
+		})
+	}
+}
+
 func TestSplitter_Split_DoubleEscapes(t *testing.T) {
 	s, err := NewSplitter(",", DoubleQuotesDoubleEscaped)
 	require.NoError(t, err)

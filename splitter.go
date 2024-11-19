@@ -192,8 +192,10 @@ func (ctx *splitterContext) split() ([]string, error) {
 	if ctx.inAny() {
 		return nil, newSplittingError(Unclosed, ctx.current.openPos, ctx.current.enc.Start, &ctx.current.enc)
 	}
-	if err := ctx.purge(ctx.len, 0, true); err != nil {
-		return nil, err
+	for j := range ctx.splitter.separator {
+		if err := ctx.purge(ctx.len, j, true); err != nil {
+			return nil, err
+		}
 	}
 	return ctx.captured, nil
 }
@@ -243,7 +245,7 @@ func (ctx *splitterContext) purge(i, j int, isLast bool) (err error) {
 		} else {
 			ctx.skipped++
 		}
-		ctx.lastAt = i + 1
+		ctx.lastAt = i + len(ctx.splitter.separator) // was 1
 		ctx.delims = make([]SubPart, 0)
 	}
 	return
